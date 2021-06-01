@@ -1,0 +1,9 @@
+{
+    "VIDEO_PARAMS": {
+		"thresh":20,
+        "medianBlurSize":3,
+        "gausianBlurSize":3,
+		"morfologiSize":,
+		"sizeRectObj":50
+    }
+}

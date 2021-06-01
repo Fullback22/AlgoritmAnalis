@@ -1,0 +1,6 @@
+{
+    "ANALIS_SETTINGS": {
+		"coefficientMinDiagonal":1.5,
+        "coefficientMaxDiagonal":0.5
+    }
+}

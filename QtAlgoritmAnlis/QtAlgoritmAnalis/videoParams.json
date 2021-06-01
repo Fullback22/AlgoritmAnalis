@@ -1,0 +1,30 @@
+{
+    "VIDEO_PARAMS": {
+	"quantity":1,
+        "objectH":[40],
+        "objectW":[40],
+		"maxObjectW":[40],
+		"maxObjectH":[40],
+		"minObjectW":[40],
+		"minObjectH":[40],
+		"velW":[1],
+		"velH":[1],
+		"startAngel":[0],
+		"velAngel":[0],
+        "signalToNoiseRatio":[1.01],
+        "velX":[2,2],
+        "velY":[1,2],
+        "firstFrame":[0,10],
+        "lastFrame":[2000,100],
+        "startX":[100,400],
+        "startY":[100,200],
+        "positiveContrast":[0,0],
+        "sko":3,
+        "medium":100,
+        "frameW":720,
+        "frameH":480,
+        "numFrames":2000,
+        "fps":23,
+		"updateStartCoordinate":[0,0] 
+    }
+}
