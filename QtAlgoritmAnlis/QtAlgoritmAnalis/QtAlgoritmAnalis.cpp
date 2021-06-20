@@ -36,7 +36,7 @@ QtAlgoritmAnalis::QtAlgoritmAnalis(QWidget *parent)
 	nextFrame(true),
 	writeVideo(false),
 	startVideWrite(false),
-	loadVideo(false)
+	loadVideo(true)
 {
 	ui.setupUi(this);
 	ui.horizontalSlider_thresh->setMaximum(16);
@@ -310,7 +310,6 @@ void QtAlgoritmAnalis::slot_setParams()//передает численные значения параметров 
 
 	threshe = ui.horizontalSlider_thresh->value();//порог обнаружения
 	ui.lineEdit_thresh->setText(QVariant(threshe).toString());
-	
 
 	bin_1 = ui.horizontalSlider_Bin_1->value();//сторона квадрата первой функции бинаризации
 	ui.lineEdit_Bin_1->setText(QVariant(bin_1).toString());
@@ -445,7 +444,7 @@ void QtAlgoritmAnalis::slot_workDete()  //работа обнаружителей
 				if (isxod.empty())//если видео закончилось цикл останавливается
 					break;
 				cvtColor(isxod, isxod, COLOR_BGR2GRAY);
-				detTemp->setParams(medianBlur_1, bin_1_type, rectSize, tempType, threshe);
+				detTemp->setParams(medianBlur_1, gausBlur, bin_1_type, rectSize, tempType, threshe);
 				detTemp->work(isxod);
 				detTemp->draw(isxod);
 				ui.widgetDisplayVideo->setNewImage(isxod);
@@ -470,23 +469,11 @@ void QtAlgoritmAnalis::slot_workDete()  //работа обнаружителей
 				if (loadFileWithCoordinate && !pause)//выбор способа определения цели в кадре
 				{
 					estimateAlgoritmCoordinateLoadFromFile(&predict_x, &predict_y, &predict_width, &predict_height);
-					//readCoordinateFromFile(real_x, real_y, real_width, real_height);//из файла
-					//analisDet->setRealAndPredictObj(frame, &real_x, &real_y, &real_width, &real_height, &predict_x, &predict_y, &predict_width, &predict_height);
+
 				}
 				else if (!loadFileWithCoordinate)
 				{
 					estimateAlgoritmCoordinateDifinedOperator(&predict_x, &predict_y, &predict_width, &predict_height);
-					/*if (!pause && nextFrame)
-					{
-						nextFrame = false;
-						pause = true;
-					}
-					else if (nextFrame && pause)
-					{
-						ui.widgetDisplayVideo->setObjectCoordinates(real_x, real_y, real_width, real_height);
-						analisDet->setRealAndPredictObj(frame, &real_x, &real_y, &real_width, &real_height, &predict_x, &predict_y, &predict_width, &predict_height);
-						pause = false;
-					}*/
 				}
 			}
 			if (waitKey(50) >= 0)
@@ -581,27 +568,10 @@ void QtAlgoritmAnalis::slot_workDete()  //работа обнаружителей
 				if (loadFileWithCoordinate && !pause)//выбор способа определения цели в кадре
 				{
 					estimateAlgoritmCoordinateLoadFromFile(&predict_x, &predict_y, &predict_width, &predict_height);
-					//std::vector<int> real_x;
-					//std::vector<int> real_y;
-					//std::vector<int> real_width;
-					//std::vector<int> real_height;
-					//readCoordinateFromFile(real_x, real_y, real_width, real_height);//из файла
-					//analisDet->setRealAndPredictObj(frame, &real_x, &real_y, &real_width, &real_height, &predict_x, &predict_y, &predict_width, &predict_height);
 				}
 				else if (!loadFileWithCoordinate)
 				{
 					estimateAlgoritmCoordinateDifinedOperator(&predict_x, &predict_y, &predict_width, &predict_height);
-					/*if (!pause && nextFrame)
-					{
-						nextFrame = false;
-						pause = true;
-					}
-					else if (nextFrame && pause)
-					{
-						ui.widgetDisplayVideo->setObjectCoordinates(real_x, real_y, real_width, real_height);
-						analisDet->setRealAndPredictObj(frame, &real_x, &real_y, &real_width, &real_height, &predict_x, &predict_y, &predict_width, &predict_height);
-						pause = false;
-					}*/
 				}
 			}
 			if (waitKey(50) >= 0)
@@ -765,9 +735,6 @@ void QtAlgoritmAnalis::slot_workDete()  //работа обнаружителей
 
 void QtAlgoritmAnalis::slot_activParams() //активация требуемых параметров настройки алгоритмов
 {
-	//ui.lineEdit_videoName->setText("D:/K41/yk130.mp4");
-	//ui.lineEdit_masterFileName->setText("D:/K41/yk130.jpg");
-	//ui.lineEdit_dllFile->setText("D:/K41/yk130.dll");
 	if (ui.comboBox_processingType->currentIndex() == 0 )//для корреляционного обнаружителя, контурного обнаружитея
 	{
 		ui.lineEdit_masterFileName->setDisabled(false);//активация строки для записи пути к эталону
@@ -783,7 +750,7 @@ void QtAlgoritmAnalis::slot_activParams() //активация требуемых параметров настр
 	case 0: //для корреляционного обнаружителя
 		ui.horizontalSlider_thresh->setEnabled(true);
 		ui.horizontalSlider_medianBlur_1->setEnabled(true);
-		ui.horizontalSlider_GausBlur_1->setEnabled(false);
+		ui.horizontalSlider_GausBlur_1->setEnabled(true);
 		ui.horizontalSlider_Bin_1->setEnabled(false);
 		ui.horizontalSlider_Bin_2->setEnabled(false);
 		ui.horizontalSlider_Morfolo_1->setEnabled(false);
@@ -930,39 +897,7 @@ void QtAlgoritmAnalis::slot_loadDll()
 	}
 	if (ui.comboBox_processingType->currentIndex() == 4)
 	{
-		//dllActivParams = (void(*)(bool& thresh_enbl, bool& medianFilter_enbl, bool& bin_1_enbl, bool& gausFilter_enbl,
-		//	bool& marfolFilter, bool& rectSize_enl, int& thresh, bool& tempImg))GetProcAddress(hDLL_detectAlgoritm, "activParams"); //
-		//bool thresh_enbl{ false };
-		//bool medianFilter_enbl{ false };
-		//bool bin_1_enbl{ false };
-		//bool gausFilter_enbl{ false };
-		//bool marfolFilter{ false };
-		//bool rectSize_enl{ false };
-		//bool tempImgDll{ false };
-		////dllActivParams(thresh_enbl, medianFilter_enbl, bin_1_enbl, gausFilter_enbl, marfolFilter, rectSize_enl, thresh_dll, tempImgDll);//функция определяет какие параметры должны быть активны
-		//ui.horizontalSlider_thresh->setEnabled(thresh_enbl);
-		//ui.horizontalSlider_medianBlur_1->setEnabled(medianFilter_enbl);
-		//ui.horizontalSlider_GausBlur_1->setEnabled(gausFilter_enbl);
-		//ui.horizontalSlider_Bin_1->setEnabled(bin_1_enbl);
-		//ui.horizontalSlider_Bin_2->setEnabled(false);
-		//ui.horizontalSlider_Morfolo_1->setEnabled(marfolFilter);
-		//ui.horizontalSlider_rectSize->setEnabled(rectSize_enl);
-		//ui.horizontalSlider_learnSpeed->setEnabled(false);
-		//ui.checkBox_bin_1->setEnabled(bin_1_enbl);
-		//ui.checkBox_bin_2->setEnabled(false);
-		//ui.comboBox_3->setEnabled(false);
-		//ui.checkBox_fractal->setEnabled(false);
-		////need_temp_img = tempImgDll;
-		////if (need_temp_img)
-		////{
-		////	ui.lineEdit_masterFileName->setEnabled(true);//активация строки для записи пути к эталону
-		////	ui.pushButton_toMasterFile->setEnabled(true);
-		////}
-		////if (thresh_dll != -1)
-		////{
-		////	ui.horizontalSlider_thresh->setMaximum(thresh_dll);
-		////	ui.horizontalSlider_thresh->setTickInterval(thresh_dll / 5);
-		////}
+
 	}
 }
 

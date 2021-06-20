@@ -2,6 +2,8 @@
 
 
 TempDetect::TempDetect()
+	:
+	gausianBlurSize{1}
 {
 	thresher = 0;
 	rectSize = cv::Size(5,5);
@@ -9,7 +11,8 @@ TempDetect::TempDetect()
 	firstThresholdType=1;
 	tempType = 5;
 }
-TempDetect::TempDetect(int thresher_, cv::Mat const &tempImg_, int RectSize)
+TempDetect::TempDetect(int thresher_, cv::Mat const &tempImg_, int RectSize):
+	gausianBlurSize{1}
 {
 	thresher = thresher_;
 	tempImg = tempImg_;
@@ -25,12 +28,14 @@ TempDetect::~TempDetect()
 
 void TempDetect::work(cv::Mat inputImg)
 {
-	cv::Mat median_img;
-	inputImg.copyTo(median_img);
+	cv::Mat preprocessingImg;
+	inputImg.copyTo(preprocessingImg);
 	cv::Mat out_img;
+	if (gausianBlurSize >= 3)
+		cv::GaussianBlur(preprocessingImg, preprocessingImg, cv::Size(gausianBlurSize,gausianBlurSize),3);
 	if (medianBlurSize >= 3)
-		medianBlur(median_img, median_img, medianBlurSize);
-	matchTemplate(median_img, tempImg, out_img, tempType);//построение коррел€ционной матрицы
+		medianBlur(preprocessingImg, preprocessingImg, medianBlurSize);
+	matchTemplate(preprocessingImg, tempImg, out_img, tempType);//построение коррел€ционной матрицы
 	for (int idx = 0; idx < out_img.rows; idx++)
 	{
 		for (int idy = 0; idy < out_img.cols; idy++)//исключение отрицательных значений из out_img
@@ -151,7 +156,7 @@ int TempDetect::getObjWigth(int N)
 {
 	return drawObj[N].width;
 }
-void TempDetect::setParams(int medianBlurSize_, int firstThresholdType_, int rectSize_, int TempType_, int thres_)
+void TempDetect::setParams(int medianBlurSize_, int gausianBlurSize_, int firstThresholdType_, int rectSize_, int TempType_, int thres_)
 {
 	if (medianBlurSize_ > 33)
 		medianBlurSize_ = 33;
@@ -160,6 +165,14 @@ void TempDetect::setParams(int medianBlurSize_, int firstThresholdType_, int rec
 	else if (medianBlurSize_ % 2 == 0)
 		++medianBlurSize_;
 	medianBlurSize = medianBlurSize_;
+
+	if (gausianBlurSize_ > 33)
+		gausianBlurSize_ = 33;
+	else if (gausianBlurSize_ < 1)
+		gausianBlurSize_ = 3;
+	else if (gausianBlurSize_ % 2 == 0)
+		++gausianBlurSize_;
+	gausianBlurSize = gausianBlurSize_;
 
 	if (firstThresholdType_ > 1 || firstThresholdType_ < 0)
 		firstThresholdType = 1;

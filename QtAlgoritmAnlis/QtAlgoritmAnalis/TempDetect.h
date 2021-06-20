@@ -14,6 +14,7 @@ class TempDetect
 	cv::Mat tempImg;
 	cv::Size rectSize;
 	int medianBlurSize;
+	int gausianBlurSize;
 	int firstThresholdType;
 	int tempType;
 
@@ -28,7 +29,7 @@ public:
 	int getObjY(int N);
 	int getObjHigth(int N);
 	int getObjWigth(int N);
-	void setParams(int medianBlurSize, int firstThresholdType, int rectSize, int TempType, int thresher);
+	void setParams(int medianBlurSize, int gausianBlurSize_, int firstThresholdType, int rectSize, int TempType, int thresher);
 	void setTempImg(cv::Mat &tempImg);
 	void getPredictCoordinate(std::vector<int>& pred_x, std::vector<int>& pred_y, std::vector<int>& pred_width, std::vector<int>& pred_heigth);
 };
