@@ -879,6 +879,7 @@ void QtAlgoritmAnalis::slot_stop()//стоп- прекращение обработки данного видео
 	ui.PB_addRect->setEnabled(false);
 	ui.PB_delRect->setEnabled(false);
 	ui.PB_nextFrame->setEnabled(false);
+	video_1->release();
 }
 
 void QtAlgoritmAnalis::slot_loadDll()

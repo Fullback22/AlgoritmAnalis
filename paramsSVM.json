@@ -1,15 +1,16 @@
 {
-    "SVMANDHOGDET_SETTINGS": {
-	"classificatorName":"D:/programs/train SVM/test_obnarush/my_svm_POLY_5_SNR1_2.xml",
-		"winSizeX":64,
-        "winSizeY":64,
-        "blockSizeX":16,
-		"blockSizeY":16,
-		"blockStrideX":8,
-		"blockStrideY":8,
-		"cellSizeX":8,
-		"cellSizeY":8,
-		"winStepX":16,
-		"winStepY":16 
-    }
+	"SVMANDHOGDET_SETTINGS": {
+		"classificatorName": "D:/programs/AlgoritmAnalis/my_svm_POLY_5_SNR1_2_jpg.xml",
+		"winSizeX": 64,
+		"winSizeY": 64,
+		"blockSizeX": 16,
+		"blockSizeY": 16,
+		"blockStrideX": 8,
+		"blockStrideY": 8,
+		"cellSizeX": 8,
+		"cellSizeY": 8,
+		"winStepX": 16,
+		"winStepY": 16,
+		"gausianSize": 3
+	}
 }
