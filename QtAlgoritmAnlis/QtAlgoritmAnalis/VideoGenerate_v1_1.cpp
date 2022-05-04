@@ -123,6 +123,7 @@ VideoGenerate_v1_1::VideoGenerate_v1_1(std::string saveFileName_, std::string pa
     objectY(),
 	isPositivContrast(),
 	objectColor(),
+    isObject(),
 	SKO(0),
 	medium(0),
 	frameW(0),
@@ -192,6 +193,7 @@ bool VideoGenerate_v1_1::setVideoParams(std::string paramsFileName_)
             objectX = channelJson.at("startX").get<std::vector<int>>();
             objectY = channelJson.at("startY").get<std::vector<int>>();
             isPositivContrast = channelJson.at("positiveContrast").get<std::vector<int>>();
+            isObject = channelJson.at("isObject").get<std::vector<int>>();
             SKO = channelJson.at("sko").get<float>();
             medium = channelJson.at("medium").get<int>();
             frameW = channelJson.at("frameW").get<int>();
@@ -355,7 +357,8 @@ void VideoGenerate_v1_1::videoGeneratr(std::string saveFileName_)
             }
             cv::fillConvexPoly(background, vertices, 4, objectColor[j], 8);
             cv::Rect bounerBox(findBoundingBox(vertices, 4));
-            objectCoordinate << i+1 <<"\t" << bounerBox.x << "\t" << bounerBox.y << "\t" << bounerBox.width << "\t" << bounerBox.height << std::endl;
+            if (isObject[j] == 1)
+                objectCoordinate << i+1 <<"\t" << bounerBox.x << "\t" << bounerBox.y << "\t" << bounerBox.width << "\t" << bounerBox.height << std::endl;
             objectX[j] += velX[j];
             if ((objectX[j] - objectDiagonal[j] <= 0) || (objectX[j] + objectDiagonal[j] >= frameW))
             {

@@ -27,6 +27,7 @@ class VideoGenerate_v1_1
     std::vector<int> objectY;
     std::vector<int> isPositivContrast;
     std::vector<int> objectColor;
+    std::vector<int> isObject;
     float SKO;
     int medium;
     int frameW;

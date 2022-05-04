@@ -11,6 +11,6 @@
 		"cellSizeY": 8,
 		"winStepX": 16,
 		"winStepY": 16,
-		"gausianSize": 3
+		"gausianSize": 5
 	}
 }
