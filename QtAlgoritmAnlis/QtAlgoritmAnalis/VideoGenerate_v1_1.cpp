@@ -358,7 +358,7 @@ void VideoGenerate_v1_1::videoGeneratr(std::string saveFileName_)
             cv::fillConvexPoly(background, vertices, 4, objectColor[j], 8);
             cv::Rect bounerBox(findBoundingBox(vertices, 4));
             if (isObject[j] == 1)
-                objectCoordinate << i+1 <<"\t" << bounerBox.x << "\t" << bounerBox.y << "\t" << bounerBox.width << "\t" << bounerBox.height << std::endl;
+                objectCoordinate << i+1 <<"\t" << bounerBox.x << "\t" << bounerBox.y << "\t" << bounerBox.width << "\t" << bounerBox.height << "\t" << bounerBox.height * bounerBox.width << std::endl;
             objectX[j] += velX[j];
             if ((objectX[j] - objectDiagonal[j] <= 0) || (objectX[j] + objectDiagonal[j] >= frameW))
             {
