@@ -1,6 +1,6 @@
 {
 	"SVMANDHOGDET_SETTINGS": {
-		"classificatorName": "D:/programs/AlgoritmAnalis/my_svm_POLY_5_SNR1_2_jpg.xml",
+		"classificatorName": "D:/SAV/programs/AlgoritmAnalis/my_svm_POLY_5_SNR1_2_jpg.xml",
 		"winSizeX": 64,
 		"winSizeY": 64,
 		"blockSizeX": 16,
@@ -11,6 +11,6 @@
 		"cellSizeY": 8,
 		"winStepX": 16,
 		"winStepY": 16,
-		"gausianSize": 5
+		"gausianSize": 0
 	}
 }

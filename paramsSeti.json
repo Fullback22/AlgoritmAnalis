@@ -1,9 +1,9 @@
 {
     "SVMANDHOGDET_SETTINGS": {
-		"cfgFileName":"D:/programs/setiDll/yolov4-rect.cfg",
-		"modelFileName":"D:/programs/setiDll/yolov4-rect.weights",
+		"cfgFileName":"D:/SAV/programs/setiDll/yolov4-rect.cfg",
+		"modelFileName":"D:/SAV/programs/setiDll/yolov4-rect.weights",
         "blocSize":416,
 		"gausian":19,
-		"median":5
+		"median":0
     }
 }
