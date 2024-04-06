@@ -8,7 +8,7 @@
 #include <qerrormessage.h>
 #include <qaction.h>
 #include <qmessagebox.h>
-#include "qlabel.h"
+//#include "qlabel.h"
 #include "LocalGisDet.h"
 #include <iostream>
 #include "Form.h"

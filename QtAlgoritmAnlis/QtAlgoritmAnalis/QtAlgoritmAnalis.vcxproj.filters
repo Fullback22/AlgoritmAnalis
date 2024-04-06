@@ -22,6 +22,12 @@
       <Extensions>qrc;*</Extensions>
       <ParseFiles>false</ParseFiles>
     </Filter>
+    <Filter Include="Display">
+      <UniqueIdentifier>{356a2a26-b511-45d3-87f5-6a27c0f1f840}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Figure">
+      <UniqueIdentifier>{bb6eb415-149e-419a-8b85-56d86b4ef494}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <QtRcc Include="QtAlgoritmAnalis.qrc">
@@ -74,16 +80,10 @@
     <ClCompile Include="VideoGenerate_v1_1.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="QtGuiDisplay.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="ProcessedObj.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="QtRotateRect.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="myLabel.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="QtProcessedArea.cpp">
@@ -91,6 +91,21 @@
     </ClCompile>
     <ClCompile Include="Analis.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Figure\FigureRectangle.cpp">
+      <Filter>Figure</Filter>
+    </ClCompile>
+    <ClCompile Include="Figure\IFigure.cpp">
+      <Filter>Figure</Filter>
+    </ClCompile>
+    <ClCompile Include="Frame.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Display\myLabel.cpp">
+      <Filter>Display</Filter>
+    </ClCompile>
+    <ClCompile Include="Display\QtGuiDisplay.cpp">
+      <Filter>Display</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -133,6 +148,15 @@
     <ClInclude Include="Analis.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Figure\FigureRectangle.h">
+      <Filter>Figure</Filter>
+    </ClInclude>
+    <ClInclude Include="Figure\IFigure.h">
+      <Filter>Figure</Filter>
+    </ClInclude>
+    <ClInclude Include="Frame.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="Form.h">
@@ -141,14 +165,14 @@
     <QtMoc Include="QtGUIVideoGenerate.h">
       <Filter>Header Files</Filter>
     </QtMoc>
-    <QtMoc Include="QtGuiDisplay.h">
-      <Filter>Header Files</Filter>
-    </QtMoc>
-    <QtMoc Include="myLabel.h">
-      <Filter>Header Files</Filter>
-    </QtMoc>
     <QtMoc Include="QtProcessedArea.h">
       <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="Display\myLabel.h">
+      <Filter>Display</Filter>
+    </QtMoc>
+    <QtMoc Include="Display\QtGuiDisplay.h">
+      <Filter>Display</Filter>
     </QtMoc>
   </ItemGroup>
   <ItemGroup>
@@ -158,7 +182,7 @@
     <QtUic Include="QtGUIVideoGenerate.ui">
       <Filter>Form Files</Filter>
     </QtUic>
-    <QtUic Include="QtGuiDisplay.ui">
+    <QtUic Include="Display\QtGuiDisplay.ui">
       <Filter>Resource Files</Filter>
     </QtUic>
   </ItemGroup>

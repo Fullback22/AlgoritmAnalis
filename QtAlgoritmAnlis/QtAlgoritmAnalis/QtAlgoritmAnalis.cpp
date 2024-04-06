@@ -181,7 +181,9 @@ void QtAlgoritmAnalis::estimateAlgoritmCoordinateDifinedOperator(std::vector<int
 		std::vector<int> real_y;
 		std::vector<int> real_width;
 		std::vector<int> real_height;
-		ui.widgetDisplayVideo->setObjectCoordinates(real_x, real_y, real_width, real_height);
+
+		//TODO setRectangel on image
+		//ui.widgetDisplayVideo-> setObjectCoordinates(real_x, real_y, real_width, real_height);
 		writeCoordinateRealObjectToFile(real_x, real_y, real_width, real_height);
 		if (loadFileWithParams)
 		{
@@ -216,7 +218,7 @@ void QtAlgoritmAnalis::estimateAlgoritmCoordinateLoadFromFile(std::vector<int>* 
 
 void QtAlgoritmAnalis::writeAlgoritmWork()
 {
-	QImage buferPixmap(ui.widgetDisplayVideo->getProcessingImg());
+	QImage buferPixmap{}; //TO DO get QImage
 	cv::Mat frameOut(buferPixmap.height(), buferPixmap.width(), CV_8UC4, buferPixmap.bits(), buferPixmap.bytesPerLine());
 	cvtColor(frameOut, frameOut, COLOR_BGR2GRAY);
 	if (!startVideWrite)
@@ -447,17 +449,18 @@ void QtAlgoritmAnalis::slot_workDete()  //работа обнаружителей
 				detTemp->setParams(medianBlur_1, gausBlur, bin_1_type, rectSize, tempType, threshe);
 				detTemp->work(isxod);
 				detTemp->draw(isxod);
-				ui.widgetDisplayVideo->setNewImage(isxod);
+				//TODO Frame
+				ui.widgetDisplayVideo->updateFrame(isxod);
 				if (writeVideo)
 				{
 					writeAlgoritmWork();
 				}
 				frame++;
 			}
-			if (loadVideo)
-				ui.widgetDisplayVideo->printFrameNuber(frame);
-			ui.widgetDisplayVideo->printDetectObjNuber(detTemp->getDetectedObj());
-			ui.widgetDisplayVideo->updateImg();
+			/*if (loadVideo)
+				ui.widgetDisplayVideo->printFrameNuber(frame);*/
+			//ui.widgetDisplayVideo->printDetectObjNuber(detTemp->getDetectedObj());
+			ui.widgetDisplayVideo->updateImage();
 
 			if (analis) //анализ работы алгоритма
 			{
@@ -481,208 +484,208 @@ void QtAlgoritmAnalis::slot_workDete()  //работа обнаружителей
 		}
 		break;
 	}
-	case 1: //порядок работы алгоритма локальных гистограмм
-	{
-		for (; !stop;)//непосредственно обработка видео, если нажата stop цикл заканчивается
-		{
-			if (!pause)
-			{
-				if(loadVideo)
-					video_1->read(isxod);
-				else
-					isxod = imread(ui.lineEdit_videoName->text().toStdString());
-				if (isxod.empty())//если видео закончилось цикл останавливается
-					break;
-				cvtColor(isxod, isxod, COLOR_BGR2GRAY);
-				detLocalGis->setParams(threshe, medianBlur_1, bin_1, bin_2, gausBlur, morfol_1, bin_1_type, bin_2_type, rectSize);
-				detLocalGis->work(isxod);
-				detLocalGis->draw(isxod);
-				ui.widgetDisplayVideo->setNewImage(isxod);
-				if (writeVideo)
-				{
-					writeAlgoritmWork();
-				}
-				frame++;
-			}
-			if (loadVideo)
-				ui.widgetDisplayVideo->printFrameNuber(frame);
-			ui.widgetDisplayVideo->printDetectObjNuber(detLocalGis->getDetectedObj());
-			ui.widgetDisplayVideo->updateImg();
+	//case 1: //порядок работы алгоритма локальных гистограмм
+	//{
+	//	for (; !stop;)//непосредственно обработка видео, если нажата stop цикл заканчивается
+	//	{
+	//		if (!pause)
+	//		{
+	//			if(loadVideo)
+	//				video_1->read(isxod);
+	//			else
+	//				isxod = imread(ui.lineEdit_videoName->text().toStdString());
+	//			if (isxod.empty())//если видео закончилось цикл останавливается
+	//				break;
+	//			cvtColor(isxod, isxod, COLOR_BGR2GRAY);
+	//			detLocalGis->setParams(threshe, medianBlur_1, bin_1, bin_2, gausBlur, morfol_1, bin_1_type, bin_2_type, rectSize);
+	//			detLocalGis->work(isxod);
+	//			detLocalGis->draw(isxod);
+	//			ui.widgetDisplayVideo->setNewImage(isxod);
+	//			if (writeVideo)
+	//			{
+	//				writeAlgoritmWork();
+	//			}
+	//			frame++;
+	//		}
+	//		if (loadVideo)
+	//			ui.widgetDisplayVideo->printFrameNuber(frame);
+	//		ui.widgetDisplayVideo->printDetectObjNuber(detLocalGis->getDetectedObj());
+	//		ui.widgetDisplayVideo->updateImg();
 
-			if (analis)//анализ работы алгоритма
-			{
-				std::vector<int> predict_x;
-				std::vector<int> predict_y;
-				std::vector<int> predict_width;
-				std::vector<int> predict_height;
-				detLocalGis->getPredictCoordinate(predict_x, predict_y, predict_width, predict_height);
-				if (loadFileWithCoordinate && !pause)//выбор способа определения цели в кадре
-				{	
-					estimateAlgoritmCoordinateLoadFromFile(&predict_x, &predict_y, &predict_width, &predict_height);
-				}
-				else if (!loadFileWithCoordinate)
-				{
-					estimateAlgoritmCoordinateDifinedOperator(&predict_x, &predict_y, &predict_width, &predict_height);
-				}
-			}
-			if (waitKey(50) >= 0)
-				break;
-		}
-		break;
-	}
-	case 2: //порядок работы алгоритма вычитания фона
-	{
-		for (; !stop;) // непосредственно обработка видео, если нажата stop цикл заканчивается
-		{
-			if (!pause)
-			{
-				if(loadVideo)
-					video_1->read(isxod);
-				else
-					isxod = imread(ui.lineEdit_videoName->text().toStdString());
-				if (isxod.empty())//если видео закончилось цикл останавливается
-					break;
-				cvtColor(isxod, isxod, COLOR_BGR2GRAY);
-				detSubBacground->setParams(threshe, medianBlur_1, bin_1, morfol_1, bin_1_type, learSpeed, rectSize);
-				detSubBacground->work(isxod);
-				detSubBacground->draw(isxod);
-				ui.widgetDisplayVideo->setNewImage(isxod);
-				if (writeVideo)
-				{
-					writeAlgoritmWork();
-				}
-				frame++;
-			}
-			if (loadVideo)
-				ui.widgetDisplayVideo->printFrameNuber(frame);
-			ui.widgetDisplayVideo->printDetectObjNuber(detSubBacground->getDetectedObj());
-			ui.widgetDisplayVideo->updateImg();
+	//		if (analis)//анализ работы алгоритма
+	//		{
+	//			std::vector<int> predict_x;
+	//			std::vector<int> predict_y;
+	//			std::vector<int> predict_width;
+	//			std::vector<int> predict_height;
+	//			detLocalGis->getPredictCoordinate(predict_x, predict_y, predict_width, predict_height);
+	//			if (loadFileWithCoordinate && !pause)//выбор способа определения цели в кадре
+	//			{	
+	//				estimateAlgoritmCoordinateLoadFromFile(&predict_x, &predict_y, &predict_width, &predict_height);
+	//			}
+	//			else if (!loadFileWithCoordinate)
+	//			{
+	//				estimateAlgoritmCoordinateDifinedOperator(&predict_x, &predict_y, &predict_width, &predict_height);
+	//			}
+	//		}
+	//		if (waitKey(50) >= 0)
+	//			break;
+	//	}
+	//	break;
+	//}
+	//case 2: //порядок работы алгоритма вычитания фона
+	//{
+	//	for (; !stop;) // непосредственно обработка видео, если нажата stop цикл заканчивается
+	//	{
+	//		if (!pause)
+	//		{
+	//			if(loadVideo)
+	//				video_1->read(isxod);
+	//			else
+	//				isxod = imread(ui.lineEdit_videoName->text().toStdString());
+	//			if (isxod.empty())//если видео закончилось цикл останавливается
+	//				break;
+	//			cvtColor(isxod, isxod, COLOR_BGR2GRAY);
+	//			detSubBacground->setParams(threshe, medianBlur_1, bin_1, morfol_1, bin_1_type, learSpeed, rectSize);
+	//			detSubBacground->work(isxod);
+	//			detSubBacground->draw(isxod);
+	//			ui.widgetDisplayVideo->setNewImage(isxod);
+	//			if (writeVideo)
+	//			{
+	//				writeAlgoritmWork();
+	//			}
+	//			frame++;
+	//		}
+	//		if (loadVideo)
+	//			ui.widgetDisplayVideo->printFrameNuber(frame);
+	//		ui.widgetDisplayVideo->printDetectObjNuber(detSubBacground->getDetectedObj());
+	//		ui.widgetDisplayVideo->updateImg();
 
-			if (analis)//анализ работы алгоритма
-			{
-				std::vector<int> predict_x;
-				std::vector<int> predict_y;
-				std::vector<int> predict_width;
-				std::vector<int> predict_height;
-				detSubBacground->getPredictCoordinate(predict_x, predict_y, predict_width, predict_height);
-				if (loadFileWithCoordinate && !pause)//выбор способа определения цели в кадре
-				{
-					estimateAlgoritmCoordinateLoadFromFile(&predict_x, &predict_y, &predict_width, &predict_height);
-				}
-				else if (!loadFileWithCoordinate)
-				{
-					estimateAlgoritmCoordinateDifinedOperator(&predict_x, &predict_y, &predict_width, &predict_height);
-				}
-			}
-			if (waitKey(50) >= 0)
-				break;
-		}
-		break;
-	}
-	case 3: //порядок работы алгоритма обнаружения целей при априорной неопределённости
-	{
-		for (; !stop;)// непосредственно обработка видео, если нажата stop цикл заканчивается
-		{
-			if (!pause)
-			{
-				if(loadVideo)
-					video_1->read(isxod);
-				else
-					isxod = imread(ui.lineEdit_videoName->text().toStdString());
-				if (isxod.empty())//если видео закончилось цикл останавливается
-					break;
-				cvtColor(isxod, isxod, COLOR_BGR2GRAY);
-				detVevlet->setParams(threshe, medianBlur_1, gausBlur, fraktal);
-				detVevlet->set_img(&isxod);
-				detVevlet->poisk();
-				detVevlet->fractal_filter();
-				detVevlet->korrelycion_pois();
-				detVevlet->set_temp_obl();
-				detVevlet->draw_cel(isxod);
-				ui.widgetDisplayVideo->setNewImage(isxod);
-				if (writeVideo)
-				{
-					writeAlgoritmWork();
-				}
-				frame++;
-			}
-			if (loadVideo)
-				ui.widgetDisplayVideo->printFrameNuber(frame);
-			ui.widgetDisplayVideo->printDetectObjNuber(detVevlet->find_object());
-			ui.widgetDisplayVideo->updateImg();
+	//		if (analis)//анализ работы алгоритма
+	//		{
+	//			std::vector<int> predict_x;
+	//			std::vector<int> predict_y;
+	//			std::vector<int> predict_width;
+	//			std::vector<int> predict_height;
+	//			detSubBacground->getPredictCoordinate(predict_x, predict_y, predict_width, predict_height);
+	//			if (loadFileWithCoordinate && !pause)//выбор способа определения цели в кадре
+	//			{
+	//				estimateAlgoritmCoordinateLoadFromFile(&predict_x, &predict_y, &predict_width, &predict_height);
+	//			}
+	//			else if (!loadFileWithCoordinate)
+	//			{
+	//				estimateAlgoritmCoordinateDifinedOperator(&predict_x, &predict_y, &predict_width, &predict_height);
+	//			}
+	//		}
+	//		if (waitKey(50) >= 0)
+	//			break;
+	//	}
+	//	break;
+	//}
+	//case 3: //порядок работы алгоритма обнаружения целей при априорной неопределённости
+	//{
+	//	for (; !stop;)// непосредственно обработка видео, если нажата stop цикл заканчивается
+	//	{
+	//		if (!pause)
+	//		{
+	//			if(loadVideo)
+	//				video_1->read(isxod);
+	//			else
+	//				isxod = imread(ui.lineEdit_videoName->text().toStdString());
+	//			if (isxod.empty())//если видео закончилось цикл останавливается
+	//				break;
+	//			cvtColor(isxod, isxod, COLOR_BGR2GRAY);
+	//			detVevlet->setParams(threshe, medianBlur_1, gausBlur, fraktal);
+	//			detVevlet->set_img(&isxod);
+	//			detVevlet->poisk();
+	//			detVevlet->fractal_filter();
+	//			detVevlet->korrelycion_pois();
+	//			detVevlet->set_temp_obl();
+	//			detVevlet->draw_cel(isxod);
+	//			ui.widgetDisplayVideo->setNewImage(isxod);
+	//			if (writeVideo)
+	//			{
+	//				writeAlgoritmWork();
+	//			}
+	//			frame++;
+	//		}
+	//		if (loadVideo)
+	//			ui.widgetDisplayVideo->printFrameNuber(frame);
+	//		ui.widgetDisplayVideo->printDetectObjNuber(detVevlet->find_object());
+	//		ui.widgetDisplayVideo->updateImg();
 
-			if (analis)//анализ работы алгоритма
-			{
-				std::vector<int> predict_x;
-				std::vector<int> predict_y;
-				std::vector<int> predict_width;
-				std::vector<int> predict_height;
-				detVevlet->getPredictCoordinate(predict_x, predict_y, predict_width, predict_height);
-				if (loadFileWithCoordinate && !pause)//выбор способа определения цели в кадре
-				{		
-					estimateAlgoritmCoordinateLoadFromFile(&predict_x, &predict_y, &predict_width, &predict_height);
-				}
-				else if (!loadFileWithCoordinate)
-				{
-					estimateAlgoritmCoordinateDifinedOperator(&predict_x, &predict_y, &predict_width, &predict_height);
-				}
-			}
-			if (waitKey(50) >= 0)
-				break;
-		}
-		break;
-	}
-	case 4: //порядок работы с dll файлом
-	{
-		for (; !stop;)//непосредственно обработка видео, если нажата stop цикл заканчивается
-		{
-			if (!pause)
-			{
-				if(loadVideo)
-					video_1->read(isxod);
-				else
-					isxod = imread(ui.lineEdit_videoName->text().toStdString());
-				if (isxod.empty())//если видео закончилось цикл останавливается
-					break;
-				cvtColor(isxod, isxod, COLOR_BGR2GRAY);
-				dllAlgoritm_SetParams(name_fileParamsForAlgoritm.toStdString());
-				dllAlgoritm_Work(isxod);
-				dllAlgoritm_Draw(isxod);
-				ui.widgetDisplayVideo->getProcessingImg();
-				ui.widgetDisplayVideo->setNewImage(isxod);
-				if (writeVideo)
-				{
-					writeAlgoritmWork();
-				}
-				frame++;
-			}
-			if (loadVideo)
-				ui.widgetDisplayVideo->printFrameNuber(frame);
-			ui.widgetDisplayVideo->printDetectObjNuber(dllAlgotitm_GetDetObj());
-			ui.widgetDisplayVideo->updateImg();
+	//		if (analis)//анализ работы алгоритма
+	//		{
+	//			std::vector<int> predict_x;
+	//			std::vector<int> predict_y;
+	//			std::vector<int> predict_width;
+	//			std::vector<int> predict_height;
+	//			detVevlet->getPredictCoordinate(predict_x, predict_y, predict_width, predict_height);
+	//			if (loadFileWithCoordinate && !pause)//выбор способа определения цели в кадре
+	//			{		
+	//				estimateAlgoritmCoordinateLoadFromFile(&predict_x, &predict_y, &predict_width, &predict_height);
+	//			}
+	//			else if (!loadFileWithCoordinate)
+	//			{
+	//				estimateAlgoritmCoordinateDifinedOperator(&predict_x, &predict_y, &predict_width, &predict_height);
+	//			}
+	//		}
+	//		if (waitKey(50) >= 0)
+	//			break;
+	//	}
+	//	break;
+	//}
+	//case 4: //порядок работы с dll файлом
+	//{
+	//	for (; !stop;)//непосредственно обработка видео, если нажата stop цикл заканчивается
+	//	{
+	//		if (!pause)
+	//		{
+	//			if(loadVideo)
+	//				video_1->read(isxod);
+	//			else
+	//				isxod = imread(ui.lineEdit_videoName->text().toStdString());
+	//			if (isxod.empty())//если видео закончилось цикл останавливается
+	//				break;
+	//			cvtColor(isxod, isxod, COLOR_BGR2GRAY);
+	//			dllAlgoritm_SetParams(name_fileParamsForAlgoritm.toStdString());
+	//			dllAlgoritm_Work(isxod);
+	//			dllAlgoritm_Draw(isxod);
+	//			ui.widgetDisplayVideo->getProcessingImg();
+	//			ui.widgetDisplayVideo->setNewImage(isxod);
+	//			if (writeVideo)
+	//			{
+	//				writeAlgoritmWork();
+	//			}
+	//			frame++;
+	//		}
+	//		if (loadVideo)
+	//			ui.widgetDisplayVideo->printFrameNuber(frame);
+	//		ui.widgetDisplayVideo->printDetectObjNuber(dllAlgotitm_GetDetObj());
+	//		ui.widgetDisplayVideo->updateImg();
 
-			if (analis)//анализ работы алгоритма
-			{
-				std::vector<int> predict_x;
-				std::vector<int> predict_y;
-				std::vector<int> predict_width;
-				std::vector<int> predict_height;
-				dllAlgoritm_GetPredictCoordinate(predict_x, predict_y, predict_width, predict_height);
-				if (loadFileWithCoordinate && !pause)//выбор способа определения цели в кадре
-				{
-					estimateAlgoritmCoordinateLoadFromFile(&predict_x, &predict_y, &predict_width, &predict_height);
-				}
-				
-				else if (!loadFileWithCoordinate)
-				{
-					estimateAlgoritmCoordinateDifinedOperator(&predict_x, &predict_y, &predict_width, &predict_height);
-				}
-			}
-			if (waitKey(50) >= 0)
-				break;
-		}
-		break;
-	}
+	//		if (analis)//анализ работы алгоритма
+	//		{
+	//			std::vector<int> predict_x;
+	//			std::vector<int> predict_y;
+	//			std::vector<int> predict_width;
+	//			std::vector<int> predict_height;
+	//			dllAlgoritm_GetPredictCoordinate(predict_x, predict_y, predict_width, predict_height);
+	//			if (loadFileWithCoordinate && !pause)//выбор способа определения цели в кадре
+	//			{
+	//				estimateAlgoritmCoordinateLoadFromFile(&predict_x, &predict_y, &predict_width, &predict_height);
+	//			}
+	//			
+	//			else if (!loadFileWithCoordinate)
+	//			{
+	//				estimateAlgoritmCoordinateDifinedOperator(&predict_x, &predict_y, &predict_width, &predict_height);
+	//			}
+	//		}
+	//		if (waitKey(50) >= 0)
+	//			break;
+	//	}
+	//	break;
+	//}
 	}
 
 	if (isxod.empty() && !stop)//если видео закончилось, выполняется метод slot_stop
@@ -922,12 +925,14 @@ void QtAlgoritmAnalis::slot_dataFromVideoGenerate(QString videoName)
 
 void QtAlgoritmAnalis::slot_addRect()
 {
-	ui.widgetDisplayVideo->add_rect(1);
+	//TODO add rectangel
+	//ui.widgetDisplayVideo->addRectangel();
 }
 
 void QtAlgoritmAnalis::slot_deletRect()
 {
-	ui.widgetDisplayVideo->deleteActivRect();
+	//TODO figure index
+	ui.widgetDisplayVideo->deleteFigure(0);
 }
 
 void QtAlgoritmAnalis::slot_nextFrame()

@@ -12,9 +12,9 @@
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{DCD1CD22-AC04-4C70-99B5-82F43C842669}</ProjectGuid>
-    <Keyword>QtVS_v303</Keyword>
+    <Keyword>QtVS_v304</Keyword>
     <QtMsBuild Condition="'$(QtMsBuild)'=='' OR !Exists('$(QtMsBuild)\qt.targets')">$(MSBuildProjectDirectory)\QtMsBuild</QtMsBuild>
-    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.18362.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'" Label="Configuration">
@@ -24,7 +24,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <Target Name="QtMsBuildNotFound" BeforeTargets="CustomBuild;ClCompile" Condition="!Exists('$(QtMsBuild)\qt.targets') or !Exists('$(QtMsBuild)\qt.props')">
@@ -48,15 +48,26 @@
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
-      <AdditionalIncludeDirectories>$(Qt_INCLUDEPATH_);%(AdditionalIncludeDirectories);C:\opencv15\opencv\build\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.\GeneratedFiles\$(ConfigurationName);.\GeneratedFiles;$(Qt_INCLUDEPATH_);%(AdditionalIncludeDirectories);C:\opencv\build\include</AdditionalIncludeDirectories>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
-      <AdditionalLibraryDirectories>$(Qt_LIBPATH_);%(AdditionalLibraryDirectories);C:\opencv15\opencv\build\x64\vc15\lib</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(Qt_LIBPATH_);%(AdditionalLibraryDirectories);C:\opencv\build\x64\vc15\lib</AdditionalLibraryDirectories>
       <AdditionalDependencies>$(Qt_LIBS_);%(AdditionalDependencies);opencv_world440d.lib</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>.\GeneratedFiles\$(ConfigurationName);.\GeneratedFiles;$(Qt_INCLUDEPATH_);%(AdditionalIncludeDirectories);C:\opencv15\opencv\build\include</AdditionalIncludeDirectories>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+    </ClCompile>
+    <Link>
+      <AdditionalLibraryDirectories>$(Qt_LIBPATH_);%(AdditionalLibraryDirectories);C:\opencv15\opencv\build\x64\vc15\lib</AdditionalLibraryDirectories>
+      <AdditionalDependencies>$(Qt_LIBS_);%(AdditionalDependencies);opencv_world440.lib</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'" Label="QtSettings">
-    <QtInstall>msvc2017_64</QtInstall>
+    <QtInstall>5.14.2_msvc2017_64</QtInstall>
     <QtModules>core;gui;widgets</QtModules>
     <QtBuildConfig>debug</QtBuildConfig>
   </PropertyGroup>
@@ -75,6 +86,7 @@
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <Optimization>Disabled</Optimization>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -88,6 +100,7 @@
       <DebugInformationFormat>None</DebugInformationFormat>
       <Optimization>MaxSpeed</Optimization>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -95,9 +108,12 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="myLabel.cpp" />
+    <ClCompile Include="Display\myLabel.cpp" />
+    <ClCompile Include="Display\QtGuiDisplay.cpp" />
+    <ClCompile Include="Figure\FigureRectangle.cpp" />
+    <ClCompile Include="Figure\IFigure.cpp" />
+    <ClCompile Include="Frame.cpp" />
     <ClCompile Include="ProcessedObj.cpp" />
-    <ClCompile Include="QtGuiDisplay.cpp" />
     <ClCompile Include="QtGUIVideoGenerate.cpp" />
     <ClCompile Include="QtProcessedArea.cpp" />
     <ClCompile Include="QtRotateRect.cpp" />
@@ -107,6 +123,7 @@
     <ClCompile Include="VideoGenerate_v1_1.cpp" />
     <ClCompile Include="Analis.cpp" />
     <QtRcc Include="QtAlgoritmAnalis.qrc" />
+    <QtUic Include="Display\QtGuiDisplay.ui" />
     <QtUic Include="Form.ui" />
     <QtUic Include="QtAlgoritmAnalis.ui" />
     <QtMoc Include="QtAlgoritmAnalis.h" />
@@ -118,19 +135,21 @@
     <ClCompile Include="Oblast.cpp" />
     <ClCompile Include="QtAlgoritmAnalis.cpp" />
     <ClCompile Include="main.cpp" />
-    <QtUic Include="QtGuiDisplay.ui" />
     <QtUic Include="QtGUIVideoGenerate.ui" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Cel.h" />
     <ClInclude Include="Charactristic.h" />
+    <QtMoc Include="Display\myLabel.h" />
+    <QtMoc Include="Display\QtGuiDisplay.h" />
+    <ClInclude Include="Figure\FigureRectangle.h" />
+    <ClInclude Include="Figure\IFigure.h" />
+    <ClInclude Include="Frame.h" />
     <ClInclude Include="funk.h" />
     <ClInclude Include="json.hpp" />
     <ClInclude Include="LocalGisDet.h" />
-    <QtMoc Include="myLabel.h" />
     <ClInclude Include="Oblast.h" />
     <QtMoc Include="QtGUIVideoGenerate.h" />
-    <QtMoc Include="QtGuiDisplay.h" />
     <ClInclude Include="ProcessedObj.h" />
     <QtMoc Include="QtProcessedArea.h" />
     <ClInclude Include="QtRotateRect.h" />
