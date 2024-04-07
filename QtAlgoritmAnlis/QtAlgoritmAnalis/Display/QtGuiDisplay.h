@@ -49,6 +49,9 @@ public:
 	void deleteFigure(int const index);
 
 	void updateImage();
+
+	int getActivFigureIndex() const;
+	const QPixmap& getCurentImage() const;
 private:
 	Ui::QtGuiDisplay ui;
 

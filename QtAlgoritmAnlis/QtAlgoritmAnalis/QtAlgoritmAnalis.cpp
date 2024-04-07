@@ -1,44 +1,157 @@
 #include "QtAlgoritmAnalis.h"
 
 QtAlgoritmAnalis::QtAlgoritmAnalis(QWidget *parent)
-    : QWidget(parent),
-	myform(nullptr),
-	newVideoForm(nullptr),
-	typeDet(0),
-	typeWork(0),
-	clean_line1(false),
-	clean_line2(false),
-	analis(false),
-	loadFileWithCoordinate(false),
-	loadFileWithParams(false),
-	detLocalGis(nullptr),
-	detSubBacground(nullptr),
-	detTemp(nullptr),
-	detVevlet(nullptr),
-	analisDet(nullptr),
-	video_1(nullptr),
-	threshe(0),
-	threshe_doub(0),
-	bin_1(3),
-	bin_2(3),
-	gausBlur(1),
-	morfol_1(1),
-	medianBlur_1(1),
-	rectSize(3),
-	bin_1_type(0),
-	bin_2_type(0),
-	tempType(0),
-	learSpeed(0),
-	fraktal(false),
-	stop(false),
-	pause(false),
-	frame(0),
-	nextFrame(true),
-	writeVideo(false),
-	startVideWrite(false),
-	loadVideo(true)
+    : QWidget(parent)
 {
 	ui.setupUi(this);
+	setGiuParametrs();
+	
+	
+	
+	//connect(ui.lineEdit_videoName, SIGNAL(cursorPositionChanged(int, int)), this, SLOT(slot_cleanVideoNameLE()));
+	connect(ui.comboBox_processingType, SIGNAL(activated(int)), this, SLOT(slot_activParams()));
+	//connect(ui.lineEdit_masterFileName, SIGNAL(cursorPositionChanged(int, int)), this, SLOT(slot_cleanFileNameLE()));
+	connect(ui.comboBox_workType, SIGNAL(activated(int)), this, SLOT(slot_analis()));
+	connect(ui.pushButton_toVideo, SIGNAL(clicked()), this, SLOT(slot_openVideo()));
+	connect(ui.pushButton_toMasterFile, SIGNAL(clicked()), this, SLOT(slot_openTempImg()));
+	connect(ui.pushButton_toDllFile, SIGNAL(clicked()), this, SLOT(slot_loadDll()));
+	connect(ui.PB_ok, SIGNAL(clicked()), this, SLOT(slot_OK()));
+	connect(ui.PB_start, SIGNAL(clicked()), this, SLOT(slot_workBeginDete()));
+	connect(ui.pushButton_Pause, SIGNAL(clicked()), this, SLOT(slot_pause()));
+	connect(ui.pushButton_Pause, SIGNAL(clicked()), this, SLOT(slot_workDete()));
+	connect(ui.pushButton_Stop, SIGNAL(clicked()), this, SLOT(slot_stop()));
+	connect(ui.comboBox_3, SIGNAL(currentIndexChanged(int)), this, SLOT(slot_setParams()));
+	connect(ui.horizontalSlider_thresh, SIGNAL(valueChanged(int)), this, SLOT(slot_setParams()));
+	connect(ui.horizontalSlider_medianBlur_1, SIGNAL(valueChanged(int)), this, SLOT(slot_setParams()));
+	connect(ui.horizontalSlider_Bin_1, SIGNAL(valueChanged(int)), this, SLOT(slot_setParams()));
+	connect(ui.horizontalSlider_Bin_2, SIGNAL(valueChanged(int)), this, SLOT(slot_setParams()));
+	connect(ui.horizontalSlider_GausBlur_1, SIGNAL(valueChanged(int)), this, SLOT(slot_setParams()));
+	connect(ui.horizontalSlider_Morfolo_1, SIGNAL(valueChanged(int)), this, SLOT(slot_setParams()));
+	connect(ui.horizontalSlider_rectSize, SIGNAL(valueChanged(int)), this, SLOT(slot_setParams()));
+	connect(ui.horizontalSlider_learnSpeed, SIGNAL(valueChanged(int)), this, SLOT(slot_setParams()));
+	connect(ui.checkBox_bin_1, SIGNAL(clicked()), this, SLOT(slot_setParams()));
+	connect(ui.checkBox_bin_2, SIGNAL(clicked()), this, SLOT(slot_setParams()));
+	connect(ui.checkBox_fractal, SIGNAL(clicked()), this, SLOT(slot_setParams()));
+	connect(ui.PB_createNewVideo, SIGNAL(clicked()), this, SLOT(slot_createNewVideo()));
+	connect(ui.PB_addRect, SIGNAL(clicked()), this, SLOT(slot_addObject()));
+	connect(ui.PB_setFileWithAlgoritmParams, SIGNAL(clicked()), this, SLOT(slot_setFileWithParamsForAlgoritm()));
+	connect(ui.PB_delRect, SIGNAL(clicked()), this, SLOT(slot_deletRect()));
+	connect(ui.PB_nextFrame, SIGNAL(clicked()), this, SLOT(slot_nextFrame()));
+	connect(ui.widgetDisplayVideo, SIGNAL(clic_startWrite()), this, SLOT(slot_startStopWriteVideo()));
+
+	ui.widgetDisplayVideo->setActivFrame(Frame(cv::Mat(), true));
+}
+
+void QtAlgoritmAnalis::readCoordinateFromFile(std::vector<int>& x_, std::vector<int>& y_, std::vector<int>& width_, std::vector<int>& height_)
+{
+	std::ifstream fileTrue{fileNameWithCoordinate.toStdString()};
+	std::string true_rect{ 0 };
+	bool end_frame{false};
+	for (int i{ 1 }; end_frame==false; i++)
+	{
+		std::getline(fileTrue, true_rect);
+		std::istringstream iss{ true_rect };
+		int frame_{ 0 }, r_x{ 0 }, r_y{ 0 }, r_w{ 0 }, r_h{ 0 };
+		iss >> frame_>>r_x>>r_y>>r_w>>r_h;
+		if (frame_ == frameNamber)
+		{
+			if (r_w == 0 && r_h == 0)
+			{
+			}
+			else
+			{
+				x_.push_back(r_x);
+				y_.push_back(r_y);
+				width_.push_back(r_w);
+				height_.push_back(r_h);
+			}
+		}		
+		if (frame_ > frameNamber || fileTrue.eof())
+		{
+			end_frame = true;
+		}
+	}
+}
+
+void QtAlgoritmAnalis::writeCoordinateRealObjectToFile(std::vector<int>& x, std::vector<int>& y, std::vector<int>& width, std::vector<int>& height)
+{
+	std::ofstream realOdjectCoordinate(dirNameResWork.toStdString() + "/realObj.txt", std::ios::app);
+	if (realOdjectCoordinate.is_open())
+	{
+		for (size_t i{ 0 }; i < x.size(); ++i)
+		{
+			realOdjectCoordinate << frameNamber <<"\t"<<x[i]<<"\t"<<y[i]<<"\t"<<width[i]<<"\t"<<height[i]<< std::endl;
+		}
+	}
+	realOdjectCoordinate.close();
+}
+
+void QtAlgoritmAnalis::estimateAlgoritmCoordinateDifinedOperator(std::vector<int> *predict_x, std::vector<int>* predict_y, std::vector<int>* predict_width, std::vector<int>* predict_height)
+{
+	if (!pause && nextFrame)
+	{
+		nextFrame = false;
+		pause = true;
+	}
+	else if (nextFrame && pause)
+	{
+		std::vector<int> real_x;
+		std::vector<int> real_y;
+		std::vector<int> real_width;
+		std::vector<int> real_height;
+
+		//TODO setRectangel on image
+		//ui.widgetDisplayVideo-> setObjectCoordinates(real_x, real_y, real_width, real_height);
+		writeCoordinateRealObjectToFile(real_x, real_y, real_width, real_height);
+		if (loadFileWithParams)
+		{
+			dllAnalis_setAnalisSettings(name_fileSettingsForLoadParams.toStdString());
+			dllAnalis_setRealAndPredictObj(&real_x, &real_y, &real_width, &real_height, predict_x, predict_y, predict_width, predict_height);
+		}
+		else
+		{
+			analisDet->setRealAndPredictObj(frameNamber, &real_x, &real_y, &real_width, &real_height, predict_x, predict_y, predict_width, predict_height);
+		}
+		pause = false;
+	}
+}
+
+void QtAlgoritmAnalis::estimateAlgoritmCoordinateLoadFromFile(std::vector<int>* predict_x, std::vector<int>* predict_y, std::vector<int>* predict_width, std::vector<int>* predict_height)
+{
+	std::vector<int> real_x;
+	std::vector<int> real_y;
+	std::vector<int> real_width;
+	std::vector<int> real_height;
+	readCoordinateFromFile(real_x, real_y, real_width, real_height);//из файла
+	if (loadFileWithParams)
+	{
+		dllAnalis_setAnalisSettings(name_fileSettingsForLoadParams.toStdString());
+		dllAnalis_setRealAndPredictObj(&real_x, &real_y, &real_width, &real_height, predict_x, predict_y, predict_width, predict_height);
+	}
+	else
+	{
+		analisDet->setRealAndPredictObj(frameNamber, &real_x, &real_y, &real_width, &real_height, predict_x, predict_y, predict_width, predict_height);
+	}
+}
+
+void QtAlgoritmAnalis::writeAlgoritmWork()
+{
+	const QPixmap buferPixmap{ ui.widgetDisplayVideo->getCurentImage() };
+	cv::Mat frameOut(buferPixmap.height(), buferPixmap.width(), CV_8UC4, buferPixmap.toImage().bits(), buferPixmap.toImage().bytesPerLine());
+	cvtColor(frameOut, frameOut, COLOR_BGR2GRAY);
+	if (!startVideWrite)
+	{
+		time_t now = time(0);
+		tm* dt = localtime(&now);
+		QString name{ "recording/rec" + QString::number(dt->tm_mday) + QString::number(dt->tm_mon) + QString::number(dt->tm_year) + QString::number(dt->tm_hour) + QString::number(dt->tm_min) + QString::number(dt->tm_sec) + ".avi" };
+		outVideo = new cv::VideoWriter{ cv::String(name.toStdString()), cv::VideoWriter::fourcc('D', 'I', 'V', 'X'), 23, frameOut.size(), false };
+		startVideWrite = true;
+	}
+	outVideo->write(frameOut);
+}
+
+void QtAlgoritmAnalis::setGiuParametrs()
+{
 	ui.horizontalSlider_thresh->setMaximum(16);
 	ui.horizontalSlider_thresh->setMinimum(2);
 	ui.horizontalSlider_thresh->setTickPosition(QSlider::TicksBelow);
@@ -74,7 +187,7 @@ QtAlgoritmAnalis::QtAlgoritmAnalis(QWidget *parent)
 	ui.horizontalSlider_rectSize->setMaximum(800);
 	ui.horizontalSlider_rectSize->setTickPosition(QSlider::TicksBelow);
 	ui.horizontalSlider_rectSize->setTickInterval(80);
-	
+
 	ui.horizontalSlider_learnSpeed->setMinimum(-100);
 	ui.horizontalSlider_learnSpeed->setMaximum(+100);
 	ui.horizontalSlider_learnSpeed->setTickPosition(QSlider::TicksBelow);
@@ -88,212 +201,74 @@ QtAlgoritmAnalis::QtAlgoritmAnalis(QWidget *parent)
 	ui.lineEdit_thresh->setReadOnly(true);
 	ui.lineEdit__rectSize->setReadOnly(true);
 	ui.lineEdit_learnSpeed->setReadOnly(true);
-	
-	//ui.widgetDisplayVideo->setChangesProcessedArears(false);
-	video_1 = new VideoCapture;
-	
-	connect(ui.lineEdit_videoName, SIGNAL(cursorPositionChanged(int, int)), this, SLOT(slot_cleanVideoNameLE()));
-	connect(ui.comboBox_processingType, SIGNAL(activated(int)), this, SLOT(slot_activParams()));
-	connect(ui.lineEdit_masterFileName, SIGNAL(cursorPositionChanged(int, int)), this, SLOT(slot_cleanFileNameLE()));
-	connect(ui.comboBox_workType, SIGNAL(activated(int)), this, SLOT(slot_analis()));
-	connect(ui.pushButton_toVideo, SIGNAL(clicked()), this, SLOT(slot_openVideo()));
-	connect(ui.pushButton_toMasterFile, SIGNAL(clicked()), this, SLOT(slot_openTempImg()));
-	connect(ui.pushButton_toDllFile, SIGNAL(clicked()), this, SLOT(slot_loadDll()));
-	connect(ui.PB_ok, SIGNAL(clicked()), this, SLOT(slot_OK()));
-	connect(ui.PB_start, SIGNAL(clicked()), this, SLOT(slot_workBeginDete()));
-	connect(ui.pushButton_Pause, SIGNAL(clicked()), this, SLOT(slot_pause()));
-	connect(ui.pushButton_Pause, SIGNAL(clicked()), this, SLOT(slot_workDete()));
-	connect(ui.pushButton_Stop, SIGNAL(clicked()), this, SLOT(slot_stop()));
-	connect(ui.comboBox_3, SIGNAL(currentIndexChanged(int)), this, SLOT(slot_setParams()));
-	connect(ui.horizontalSlider_thresh, SIGNAL(valueChanged(int)), this, SLOT(slot_setParams()));
-	connect(ui.horizontalSlider_medianBlur_1, SIGNAL(valueChanged(int)), this, SLOT(slot_setParams()));
-	connect(ui.horizontalSlider_Bin_1, SIGNAL(valueChanged(int)), this, SLOT(slot_setParams()));
-	connect(ui.horizontalSlider_Bin_2, SIGNAL(valueChanged(int)), this, SLOT(slot_setParams()));
-	connect(ui.horizontalSlider_GausBlur_1, SIGNAL(valueChanged(int)), this, SLOT(slot_setParams()));
-	connect(ui.horizontalSlider_Morfolo_1, SIGNAL(valueChanged(int)), this, SLOT(slot_setParams()));
-	connect(ui.horizontalSlider_rectSize, SIGNAL(valueChanged(int)), this, SLOT(slot_setParams()));
-	connect(ui.horizontalSlider_learnSpeed, SIGNAL(valueChanged(int)), this, SLOT(slot_setParams()));
-	connect(ui.checkBox_bin_1, SIGNAL(clicked()), this, SLOT(slot_setParams()));
-	connect(ui.checkBox_bin_2, SIGNAL(clicked()), this, SLOT(slot_setParams()));
-	connect(ui.checkBox_fractal, SIGNAL(clicked()), this, SLOT(slot_setParams()));
-	connect(ui.PB_createNewVideo, SIGNAL(clicked()), this, SLOT(slot_createNewVideo()));
-	connect(ui.PB_addRect, SIGNAL(clicked()), this, SLOT(slot_addRect()));
-	connect(ui.PB_setFileWithAlgoritmParams, SIGNAL(clicked()), this, SLOT(slot_setFileWithParamsForAlgoritm()));
-	connect(ui.PB_delRect, SIGNAL(clicked()), this, SLOT(slot_deletRect()));
-	connect(ui.PB_nextFrame, SIGNAL(clicked()), this, SLOT(slot_nextFrame()));
-	connect(ui.widgetDisplayVideo, SIGNAL(clic_startWrite()), this, SLOT(slot_startStopWriteVideo()));
-}
-
-void QtAlgoritmAnalis::readCoordinateFromFile(std::vector<int>& x_, std::vector<int>& y_, std::vector<int>& width_, std::vector<int>& height_)
-{
-	std::ifstream fileTrue{fileNameWithCoordinate.toStdString()};
-	std::string true_rect{ 0 };
-	bool end_frame{false};
-	for (int i{ 1 }; end_frame==false; i++)
-	{
-		std::getline(fileTrue, true_rect);
-		std::istringstream iss{ true_rect };
-		int frame_{ 0 }, r_x{ 0 }, r_y{ 0 }, r_w{ 0 }, r_h{ 0 };
-		iss >> frame_>>r_x>>r_y>>r_w>>r_h;
-		if (frame_ == frame)
-		{
-			if (r_w == 0 && r_h == 0)
-			{
-			}
-			else
-			{
-				x_.push_back(r_x);
-				y_.push_back(r_y);
-				width_.push_back(r_w);
-				height_.push_back(r_h);
-			}
-		}		
-		if (frame_ > frame || fileTrue.eof())
-		{
-			end_frame = true;
-		}
-	}
-}
-
-void QtAlgoritmAnalis::writeCoordinateRealObjectToFile(std::vector<int>& x, std::vector<int>& y, std::vector<int>& width, std::vector<int>& height)
-{
-	std::ofstream realOdjectCoordinate(dirNameResWork.toStdString() + "/realObj.txt", std::ios::app);
-	if (realOdjectCoordinate.is_open())
-	{
-		for (size_t i{ 0 }; i < x.size(); ++i)
-		{
-			realOdjectCoordinate << frame<<"\t"<<x[i]<<"\t"<<y[i]<<"\t"<<width[i]<<"\t"<<height[i]<< std::endl;
-		}
-	}
-	realOdjectCoordinate.close();
-}
-
-void QtAlgoritmAnalis::estimateAlgoritmCoordinateDifinedOperator(std::vector<int> *predict_x, std::vector<int>* predict_y, std::vector<int>* predict_width, std::vector<int>* predict_height)
-{
-	if (!pause && nextFrame)
-	{
-		nextFrame = false;
-		pause = true;
-	}
-	else if (nextFrame && pause)
-	{
-		std::vector<int> real_x;
-		std::vector<int> real_y;
-		std::vector<int> real_width;
-		std::vector<int> real_height;
-
-		//TODO setRectangel on image
-		//ui.widgetDisplayVideo-> setObjectCoordinates(real_x, real_y, real_width, real_height);
-		writeCoordinateRealObjectToFile(real_x, real_y, real_width, real_height);
-		if (loadFileWithParams)
-		{
-			dllAnalis_setAnalisSettings(name_fileSettingsForLoadParams.toStdString());
-			dllAnalis_setRealAndPredictObj(&real_x, &real_y, &real_width, &real_height, predict_x, predict_y, predict_width, predict_height);
-		}
-		else
-		{
-			analisDet->setRealAndPredictObj(frame, &real_x, &real_y, &real_width, &real_height, predict_x, predict_y, predict_width, predict_height);
-		}
-		pause = false;
-	}
-}
-
-void QtAlgoritmAnalis::estimateAlgoritmCoordinateLoadFromFile(std::vector<int>* predict_x, std::vector<int>* predict_y, std::vector<int>* predict_width, std::vector<int>* predict_height)
-{
-	std::vector<int> real_x;
-	std::vector<int> real_y;
-	std::vector<int> real_width;
-	std::vector<int> real_height;
-	readCoordinateFromFile(real_x, real_y, real_width, real_height);//из файла
-	if (loadFileWithParams)
-	{
-		dllAnalis_setAnalisSettings(name_fileSettingsForLoadParams.toStdString());
-		dllAnalis_setRealAndPredictObj(&real_x, &real_y, &real_width, &real_height, predict_x, predict_y, predict_width, predict_height);
-	}
-	else
-	{
-		analisDet->setRealAndPredictObj(frame, &real_x, &real_y, &real_width, &real_height, predict_x, predict_y, predict_width, predict_height);
-	}
-}
-
-void QtAlgoritmAnalis::writeAlgoritmWork()
-{
-	QImage buferPixmap{}; //TO DO get QImage
-	cv::Mat frameOut(buferPixmap.height(), buferPixmap.width(), CV_8UC4, buferPixmap.bits(), buferPixmap.bytesPerLine());
-	cvtColor(frameOut, frameOut, COLOR_BGR2GRAY);
-	if (!startVideWrite)
-	{
-		time_t now = time(0);
-		tm* dt = localtime(&now);
-		QString name{ "recording/rec" + QString::number(dt->tm_mday) + QString::number(dt->tm_mon) + QString::number(dt->tm_year) + QString::number(dt->tm_hour) + QString::number(dt->tm_min) + QString::number(dt->tm_sec) + ".avi" };
-		outVideo = cv::VideoWriter::VideoWriter(cv::String(name.toStdString()), cv::VideoWriter::fourcc('D', 'I', 'V', 'X'), 23, frameOut.size(), false);
-		startVideWrite = true;
-	}
-	outVideo.write(frameOut);
 }
 
 void QtAlgoritmAnalis::slot_OK()//установка пути к видео и эталонну(dll файлу)
 {
 	bool err{ false };
-	fileNameVid = ui.lineEdit_videoName->text();
-	VideoCapture video_1(fileNameVid.toStdString());
-	typeDet = ui.comboBox_processingType->currentIndex();
+	videoFilename = ui.lineEdit_videoName->text();
+	VideoCapture testVideo(videoFilename.toStdString());
+	int detrctorType{ ui.comboBox_processingType->currentIndex() };
 	tempImg = ui.lineEdit_masterFileName->text();
 	name_dllFileWithAlgoritm = ui.lineEdit_masterFileName->text();
 	Mat test;
-	video_1.read(test);
+	testVideo.read(test);
 	if (test.empty())//проверка существования данного видео
 	{
 		QMessageBox::warning(nullptr, QObject::tr("Warning"), QObject::tr("Video is missing"));
 		err = true;
 	}
 	test = imread(tempImg.toStdString());
-	if ((typeDet == 0) && test.empty())//проверка существования данной картинки
+	if ((detrctorType == 0) && test.empty())//проверка существования данной картинки
 	{
 		QMessageBox::warning(nullptr, QObject::tr("Warning"), QObject::tr("Images is missing"));
 		err = true;
 	}
-	typeWork = ui.comboBox_workType->currentIndex();
-	if (typeDet == 4 && !hDLL_detectAlgoritm)
+
+	if (detrctorType == 4 && !hDLL_detectAlgoritm)
 	{
 		QMessageBox::warning(nullptr, QObject::tr("Warning"), QObject::tr("Dll file is missing"));
 		err = true;
 	}
 	if (!err)
+	{
 		ui.PB_start->setEnabled(true);
+		ui.widgetDisplayVideo->setActivFrame(test);
+	}
+	testVideo.release();
 }
 
 void QtAlgoritmAnalis::slot_analis()//проверка будет ли производится анализ работы
 {
 	if (ui.comboBox_workType->currentIndex() == 1)//если да, то открывем второе окно
 	{
-		myform = new Form();
-		myform->show();
-		connect(myform, SIGNAL(getDataForm(QString, QString, QString, QString, bool, bool)), this, SLOT(slot_dataFromForm(QString, QString, QString, QString, bool, bool)));//взаимодействие со второй формой
-		analis = true;
+		setAnalisParmsForm = new Form();
+		setAnalisParmsForm->show();
+		connect(setAnalisParmsForm, SIGNAL(getDataForm(QString, QString, QString, QString, bool, bool)), this, SLOT(slot_dataFromForm(QString, QString, QString, QString, bool, bool)));//взаимодействие со второй формой
+		analisMode = true;
 		this->setEnabled(false);
 	}
 	else
-		analis = false;
+		analisMode = false;
 }
 
-void QtAlgoritmAnalis::slot_cleanVideoNameLE()
-{
-	if (!clean_line1)
-	{
-		ui.lineEdit_videoName->clear();
-		clean_line1 = true;
-	}
-}
-
-void QtAlgoritmAnalis::slot_cleanFileNameLE()
-{
-	if (!clean_line2)
-	{
-		ui.lineEdit_masterFileName->clear();
-		clean_line2 = true;
-	}
-}
+//void QtAlgoritmAnalis::slot_cleanVideoNameLE()
+//{
+//	if (!clean_line1)
+//	{
+//		ui.lineEdit_videoName->clear();
+//		clean_line1 = true;
+//	}
+//}
+//
+//void QtAlgoritmAnalis::slot_cleanFileNameLE()
+//{
+//	if (!clean_line2)
+//	{
+//		ui.lineEdit_masterFileName->clear();
+//		clean_line2 = true;
+//	}
+//}
 
 void QtAlgoritmAnalis::slot_dataFromForm(QString fileWithCoordinate, QString dirToSave, QString dllWithLoadParams,QString settingsForLoadParams, bool isLoadCoordinate, bool isLoadParams) //приём данных со второй формы
 {
@@ -304,7 +279,8 @@ void QtAlgoritmAnalis::slot_dataFromForm(QString fileWithCoordinate, QString dir
 	loadFileWithCoordinate = isLoadCoordinate;
 	loadFileWithParams = isLoadParams;
 	this->setEnabled(true);
-	myform->close();
+	delete setAnalisParmsForm;
+	setAnalisParmsForm = nullptr;
 }
 
 void QtAlgoritmAnalis::slot_setParams()//передает численные значения параметров работы алгоритмов(палзунки) в соответствующие (ползункам) переменные
@@ -360,9 +336,9 @@ void QtAlgoritmAnalis::slot_workBeginDete()//нажатие кнопки start, инициализация
 	stop = false;
 	pause = false;
 	nextFrame = true;
-	frame = 0;
+	frameNamber = 0;
 	ui.comboBox_processingType->setEnabled(false);
-	video_1->open(fileNameVid.toStdString());
+	analisVideo = new VideoCapture{ videoFilename.toStdString() };
 	
 	switch (ui.comboBox_processingType->currentIndex())
 	{
@@ -391,7 +367,7 @@ void QtAlgoritmAnalis::slot_workBeginDete()//нажатие кнопки start, инициализация
 	}
 	if (ui.comboBox_workType->currentIndex() == 1)//если выбран режим анализ данных
 	{
-		analis = true;
+		analisMode = true;
 		
 		if (!loadFileWithCoordinate)
 		{
@@ -432,6 +408,7 @@ void QtAlgoritmAnalis::slot_workDete()  //работа обнаружителей
 	case 0: // порядок работы корреляционного обнаружителя
 	{
 		Mat temp;
+		
 		temp = imread(tempImg.toStdString()); //загрузка эталонна
 		cvtColor(temp, temp, COLOR_BGR2GRAY);
 		detTemp->setTempImg(temp);
@@ -439,8 +416,8 @@ void QtAlgoritmAnalis::slot_workDete()  //работа обнаружителей
 		{
 			if (!pause)
 			{
-				if (loadVideo)
-					video_1->read(isxod);
+				if (isVideoAnalysis)
+					analisVideo->read(isxod);
 				else
 					isxod = imread(ui.lineEdit_videoName->text().toStdString());
 				if (isxod.empty())//если видео закончилось цикл останавливается
@@ -449,20 +426,19 @@ void QtAlgoritmAnalis::slot_workDete()  //работа обнаружителей
 				detTemp->setParams(medianBlur_1, gausBlur, bin_1_type, rectSize, tempType, threshe);
 				detTemp->work(isxod);
 				detTemp->draw(isxod);
-				//TODO Frame
 				ui.widgetDisplayVideo->updateFrame(isxod);
 				if (writeVideo)
 				{
 					writeAlgoritmWork();
 				}
-				frame++;
+				frameNamber++;
 			}
-			/*if (loadVideo)
+			/*if (isVideoAnalysis)
 				ui.widgetDisplayVideo->printFrameNuber(frame);*/
 			//ui.widgetDisplayVideo->printDetectObjNuber(detTemp->getDetectedObj());
 			ui.widgetDisplayVideo->updateImage();
 
-			if (analis) //анализ работы алгоритма
+			if (analisMode) //анализ работы алгоритма
 			{
 				std::vector<int> predict_x;
 				std::vector<int> predict_y;
@@ -484,63 +460,65 @@ void QtAlgoritmAnalis::slot_workDete()  //работа обнаружителей
 		}
 		break;
 	}
-	//case 1: //порядок работы алгоритма локальных гистограмм
-	//{
-	//	for (; !stop;)//непосредственно обработка видео, если нажата stop цикл заканчивается
-	//	{
-	//		if (!pause)
-	//		{
-	//			if(loadVideo)
-	//				video_1->read(isxod);
-	//			else
-	//				isxod = imread(ui.lineEdit_videoName->text().toStdString());
-	//			if (isxod.empty())//если видео закончилось цикл останавливается
-	//				break;
-	//			cvtColor(isxod, isxod, COLOR_BGR2GRAY);
-	//			detLocalGis->setParams(threshe, medianBlur_1, bin_1, bin_2, gausBlur, morfol_1, bin_1_type, bin_2_type, rectSize);
-	//			detLocalGis->work(isxod);
-	//			detLocalGis->draw(isxod);
-	//			ui.widgetDisplayVideo->setNewImage(isxod);
-	//			if (writeVideo)
-	//			{
-	//				writeAlgoritmWork();
-	//			}
-	//			frame++;
-	//		}
-	//		if (loadVideo)
-	//			ui.widgetDisplayVideo->printFrameNuber(frame);
-	//		ui.widgetDisplayVideo->printDetectObjNuber(detLocalGis->getDetectedObj());
-	//		ui.widgetDisplayVideo->updateImg();
+	case 1: //порядок работы алгоритма локальных гистограмм
+	{
+		for (; !stop;)//непосредственно обработка видео, если нажата stop цикл заканчивается
+		{
+			if (!pause)
+			{
+				if(isVideoAnalysis)
+					analisVideo->read(isxod);
+				else
+					isxod = imread(ui.lineEdit_videoName->text().toStdString());
+				if (isxod.empty())//если видео закончилось цикл останавливается
+					break;
+				cvtColor(isxod, isxod, COLOR_BGR2GRAY);
+				detLocalGis->setParams(threshe, medianBlur_1, bin_1, bin_2, gausBlur, morfol_1, bin_1_type, bin_2_type, rectSize);
+				detLocalGis->work(isxod);
+				detLocalGis->draw(isxod);
+				cv::cvtColor(isxod, isxod, cv::COLOR_GRAY2BGR);
+				ui.widgetDisplayVideo->setActivFrame(isxod);
+				if (writeVideo)
+				{
+					writeAlgoritmWork();
+				}
+				frameNamber++;
+			}
+			//if (isVideoAnalysis)
+			//	ui.widgetDisplayVideo->printFrameNuber(frame);
+			//ui.widgetDisplayVideo->printDetectObjNuber(detLocalGis->getDetectedObj());
+			//ui.widgetDisplayVideo->updateImage();
+			//ui.widgetDisplayVideo->updateImage();
 
-	//		if (analis)//анализ работы алгоритма
-	//		{
-	//			std::vector<int> predict_x;
-	//			std::vector<int> predict_y;
-	//			std::vector<int> predict_width;
-	//			std::vector<int> predict_height;
-	//			detLocalGis->getPredictCoordinate(predict_x, predict_y, predict_width, predict_height);
-	//			if (loadFileWithCoordinate && !pause)//выбор способа определения цели в кадре
-	//			{	
-	//				estimateAlgoritmCoordinateLoadFromFile(&predict_x, &predict_y, &predict_width, &predict_height);
-	//			}
-	//			else if (!loadFileWithCoordinate)
-	//			{
-	//				estimateAlgoritmCoordinateDifinedOperator(&predict_x, &predict_y, &predict_width, &predict_height);
-	//			}
-	//		}
-	//		if (waitKey(50) >= 0)
-	//			break;
-	//	}
-	//	break;
-	//}
+			if (analisMode)//анализ работы алгоритма
+			{
+				std::vector<int> predict_x;
+				std::vector<int> predict_y;
+				std::vector<int> predict_width;
+				std::vector<int> predict_height;
+				detLocalGis->getPredictCoordinate(predict_x, predict_y, predict_width, predict_height);
+				if (loadFileWithCoordinate && !pause)//выбор способа определения цели в кадре
+				{	
+					estimateAlgoritmCoordinateLoadFromFile(&predict_x, &predict_y, &predict_width, &predict_height);
+				}
+				else if (!loadFileWithCoordinate)
+				{
+					estimateAlgoritmCoordinateDifinedOperator(&predict_x, &predict_y, &predict_width, &predict_height);
+				}
+			}
+			if (waitKey(50) >= 0)
+				break;
+		}
+		break;
+	}
 	//case 2: //порядок работы алгоритма вычитания фона
 	//{
 	//	for (; !stop;) // непосредственно обработка видео, если нажата stop цикл заканчивается
 	//	{
 	//		if (!pause)
 	//		{
-	//			if(loadVideo)
-	//				video_1->read(isxod);
+	//			if(isVideoAnalysis)
+	//				analisVideo->read(isxod);
 	//			else
 	//				isxod = imread(ui.lineEdit_videoName->text().toStdString());
 	//			if (isxod.empty())//если видео закончилось цикл останавливается
@@ -554,14 +532,14 @@ void QtAlgoritmAnalis::slot_workDete()  //работа обнаружителей
 	//			{
 	//				writeAlgoritmWork();
 	//			}
-	//			frame++;
+	//			frameNamber++;
 	//		}
-	//		if (loadVideo)
+	//		if (isVideoAnalysis)
 	//			ui.widgetDisplayVideo->printFrameNuber(frame);
 	//		ui.widgetDisplayVideo->printDetectObjNuber(detSubBacground->getDetectedObj());
 	//		ui.widgetDisplayVideo->updateImg();
 
-	//		if (analis)//анализ работы алгоритма
+	//		if (analisMode)//анализ работы алгоритма
 	//		{
 	//			std::vector<int> predict_x;
 	//			std::vector<int> predict_y;
@@ -588,8 +566,8 @@ void QtAlgoritmAnalis::slot_workDete()  //работа обнаружителей
 	//	{
 	//		if (!pause)
 	//		{
-	//			if(loadVideo)
-	//				video_1->read(isxod);
+	//			if(isVideoAnalysis)
+	//				analisVideo->read(isxod);
 	//			else
 	//				isxod = imread(ui.lineEdit_videoName->text().toStdString());
 	//			if (isxod.empty())//если видео закончилось цикл останавливается
@@ -607,14 +585,14 @@ void QtAlgoritmAnalis::slot_workDete()  //работа обнаружителей
 	//			{
 	//				writeAlgoritmWork();
 	//			}
-	//			frame++;
+	//			frameNamber++;
 	//		}
-	//		if (loadVideo)
+	//		if (isVideoAnalysis)
 	//			ui.widgetDisplayVideo->printFrameNuber(frame);
 	//		ui.widgetDisplayVideo->printDetectObjNuber(detVevlet->find_object());
 	//		ui.widgetDisplayVideo->updateImg();
 
-	//		if (analis)//анализ работы алгоритма
+	//		if (analisMode)//анализ работы алгоритма
 	//		{
 	//			std::vector<int> predict_x;
 	//			std::vector<int> predict_y;
@@ -641,8 +619,8 @@ void QtAlgoritmAnalis::slot_workDete()  //работа обнаружителей
 	//	{
 	//		if (!pause)
 	//		{
-	//			if(loadVideo)
-	//				video_1->read(isxod);
+	//			if(isVideoAnalysis)
+	//				analisVideo->read(isxod);
 	//			else
 	//				isxod = imread(ui.lineEdit_videoName->text().toStdString());
 	//			if (isxod.empty())//если видео закончилось цикл останавливается
@@ -657,9 +635,9 @@ void QtAlgoritmAnalis::slot_workDete()  //работа обнаружителей
 	//			{
 	//				writeAlgoritmWork();
 	//			}
-	//			frame++;
+	//			frameNamber++;
 	//		}
-	//		if (loadVideo)
+	//		if (isVideoAnalysis)
 	//			ui.widgetDisplayVideo->printFrameNuber(frame);
 	//		ui.widgetDisplayVideo->printDetectObjNuber(dllAlgotitm_GetDetObj());
 	//		ui.widgetDisplayVideo->updateImg();
@@ -695,7 +673,7 @@ void QtAlgoritmAnalis::slot_workDete()  //работа обнаружителей
 
 	if (stop)//если нажата stop, то удаляются все объекты обнаружителей, объект каласса анализатора работы
 	{
-		if (analis)
+		if (analisMode)
 		{
 			if (loadFileWithParams)
 			{
@@ -707,7 +685,7 @@ void QtAlgoritmAnalis::slot_workDete()  //работа обнаружителей
 				delete analisDet;
 				analisDet = nullptr;
 			}
-			analis = false;
+			analisMode = false;
 		}
 		switch (ui.comboBox_processingType->currentIndex())
 		{
@@ -835,8 +813,9 @@ void QtAlgoritmAnalis::closeEvent(QCloseEvent* event)//закрытие программы
 
 void QtAlgoritmAnalis::slot_openVideo()//обзор для поиска видео
 {
+	QFileDialog fd;
 	ui.lineEdit_videoName->clear();
-	if (loadVideo)
+	if (isVideoAnalysis)
 		ui.lineEdit_videoName->setText(fd.getOpenFileName(this, "Vide", "D:/", tr("Video files (*.mp4 *.avi)")));
 	else
 		ui.lineEdit_videoName->setText(fd.getOpenFileName(this, "Vide", "D:/", tr("Images files (*.png *.jpg)")));
@@ -845,6 +824,7 @@ void QtAlgoritmAnalis::slot_openVideo()//обзор для поиска видео
 void QtAlgoritmAnalis::slot_openTempImg()//обзор для поиска эталона
 {
 	ui.lineEdit_masterFileName->clear();
+	QFileDialog fd;
 	ui.lineEdit_masterFileName->setText(fd.getOpenFileName(this, "Vide", "D:/", tr("Images files (*.png *.jpg)")));
 }
 
@@ -870,7 +850,7 @@ void QtAlgoritmAnalis::slot_stop()//стоп- прекращение обработки данного видео
 	}
 	if (writeVideo)
 	{
-		outVideo.release();
+		outVideo->release();
 		startVideWrite = false;
 		writeVideo = false;
 	}
@@ -882,12 +862,13 @@ void QtAlgoritmAnalis::slot_stop()//стоп- прекращение обработки данного видео
 	ui.PB_addRect->setEnabled(false);
 	ui.PB_delRect->setEnabled(false);
 	ui.PB_nextFrame->setEnabled(false);
-	video_1->release();
+	analisVideo->release();
 }
 
 void QtAlgoritmAnalis::slot_loadDll()
 {
 	ui.lineEdit_dllFile->clear();
+	QFileDialog fd;
 	ui.lineEdit_dllFile->setText(fd.getOpenFileName(this, "DLL", "D:/", tr("DLL files (*.dll)")));
 	name_dllFileWithAlgoritm = ui.lineEdit_dllFile->text();
 	wstring bufer{ name_dllFileWithAlgoritm.toStdWString() };
@@ -917,22 +898,21 @@ void QtAlgoritmAnalis::slot_dataFromVideoGenerate(QString videoName)
 {
 	ui.lineEdit_videoName->setText(" ");
 	ui.lineEdit_videoName->setText(videoName);
-	fileNameVid = videoName;
+	videoFilename = videoName;
 	newVideoForm->close();
 	delete newVideoForm;
 	newVideoForm = nullptr;
 }
 
-void QtAlgoritmAnalis::slot_addRect()
+void QtAlgoritmAnalis::slot_addObject()
 {
-	//TODO add rectangel
-	//ui.widgetDisplayVideo->addRectangel();
+	FigureRectangle* newObject = Rectangel(0, 0, 100, 100);
+	ui.widgetDisplayVideo->addRectangel(newObject);
 }
 
 void QtAlgoritmAnalis::slot_deletRect()
 {
-	//TODO figure index
-	ui.widgetDisplayVideo->deleteFigure(0);
+	ui.widgetDisplayVideo->deleteFigure(ui.widgetDisplayVideo->getActivFigureIndex());
 }
 
 void QtAlgoritmAnalis::slot_nextFrame()
@@ -942,6 +922,7 @@ void QtAlgoritmAnalis::slot_nextFrame()
 
 void QtAlgoritmAnalis::slot_setFileWithParamsForAlgoritm()
 {
+	QFileDialog fd;
 	ui.lineEdit_algoritmParams->setText(fd.getOpenFileName(this, "Text file", "D:/", tr("Text files (*.json *.txt)")));
 	std::ifstream bufer;
 	name_fileParamsForAlgoritm = ui.lineEdit_algoritmParams->text();
@@ -962,7 +943,7 @@ void QtAlgoritmAnalis::slot_startStopWriteVideo()
 	}
 	else
 	{
-		outVideo.release();
+		outVideo->release();
 		startVideWrite = false;
 	}
 }

@@ -25,10 +25,10 @@
 
 class QtAlgoritmAnalis : public QWidget
 {
-    Q_OBJECT
-	Form* myform;
-	QtGUIVideoGenerate* newVideoForm;
-	QString fileNameVid;
+	Q_OBJECT
+	Form* setAnalisParmsForm{ nullptr };
+	QtGUIVideoGenerate* newVideoForm{ nullptr };
+	QString videoFilename{};
 	QString fileNameWithCoordinate;
 	QString dirNameResWork;
 	QString tempImg;
@@ -36,50 +36,51 @@ class QtAlgoritmAnalis : public QWidget
 	QString name_fileParamsForAlgoritm;
 	QString name_dllFileWithParams;
 	QString name_fileSettingsForLoadParams;
-	int typeDet;
-	int typeWork;
-	bool clean_line1;
-	bool clean_line2;
-	bool analis;
-	bool loadFileWithCoordinate;
-	bool loadFileWithParams;
-	LocalGisDet* detLocalGis;
-	SubtractBacground* detSubBacground;
-	TempDetect* detTemp;
-	Vevlet_obnoruth* detVevlet;
-	QFileDialog fd;
-	Analis* analisDet;
-	VideoCapture* video_1;
-	int threshe;
-	double threshe_doub;
-	int bin_1;
-	int bin_2;
-	int gausBlur;
-	int morfol_1;
-	int medianBlur_1;
-	int rectSize;
-	int bin_1_type;
-	int bin_2_type;
-	int tempType;
-	double learSpeed;
-	bool fraktal;
-	bool stop;
-	bool pause;
-	int frame;
-	bool nextFrame;
-	bool writeVideo;
-	bool startVideWrite;
-	bool loadVideo;
-	cv::VideoWriter outVideo;
+
+
+	/*bool clean_line1{ false };
+	bool clean_line2{ false };*/
+	bool analisMode{ false };
+	bool loadFileWithCoordinate{ false };
+	bool loadFileWithParams{ false };
+	LocalGisDet* detLocalGis{ nullptr };
+	SubtractBacground* detSubBacground{ nullptr };
+	TempDetect* detTemp{ nullptr };
+	Vevlet_obnoruth* detVevlet{ nullptr };
+	Analis* analisDet{ nullptr };
+	VideoCapture* analisVideo{ nullptr };
+	
+	int threshe{ 0 };
+	double threshe_doub{ 0 };
+	int bin_1{ 3 };
+	int bin_2{ 3 };
+	int gausBlur{ 1 };
+	int morfol_1{ 1 };
+	int medianBlur_1{ 1 };
+	int rectSize{ 3 };
+	int bin_1_type{ 0 };
+	int bin_2_type{ 0 };
+	int tempType{ 0 };
+	double learSpeed{ 0 };
+	bool fraktal{ false };
+
+	bool stop{ false };
+	bool pause{ false };
+	int frameNamber{ 0 };
+	bool nextFrame{ true };
+	bool writeVideo{ false };
+	bool startVideWrite{ false };
+	bool isVideoAnalysis{ true };
+	cv::VideoWriter* outVideo{ nullptr };
 
 	HMODULE hDLL_detectAlgoritm;
 	int(*dllAlgoritm_Work)(Mat InputImg);
 	int(*dllAlgoritm_Draw)(Mat& InOutputImg);
 	int(*dllAlgotitm_GetDetObj)(void);
 	int(*dllAlgoritm_SetParams)(std::string fileName);
-	int(*dllAlgoritm_GetPredictCoordinate)(std::vector<int>& x, std::vector<int>& y, std::vector<int>& width, std::vector<int>& height);	
+	int(*dllAlgoritm_GetPredictCoordinate)(std::vector<int>& x, std::vector<int>& y, std::vector<int>& width, std::vector<int>& height);
 	int(*dllAlgoritm_SetDefault)(void);
-	
+
 	HMODULE hDLL_analisAlgoritm;
 	int(*dllAnalis_setRealAndPredictObj)(std::vector<int>* real_x, std::vector<int>* real_y, std::vector<int>* real_width, std::vector<int>* real_height, std::vector<int>* pred_x, std::vector<int>* pred_y, std::vector<int>* pred_width, std::vector<int>* pred_height);
 	int(*dllAnalis_process)(std::string saveDir);
@@ -87,18 +88,19 @@ class QtAlgoritmAnalis : public QWidget
 	int(*dllAnalis_setAnalisSettings)(std::string fileName);
 	int(*dllAnalis_reset)();
 
-	void readCoordinateFromFile(std::vector<int> &x, std::vector<int>& y, std::vector<int>& width, std::vector<int>& height);
+	void readCoordinateFromFile(std::vector<int>& x, std::vector<int>& y, std::vector<int>& width, std::vector<int>& height);
 	void writeCoordinateRealObjectToFile(std::vector<int>& x, std::vector<int>& y, std::vector<int>& width, std::vector<int>& height);
 	void estimateAlgoritmCoordinateDifinedOperator(std::vector<int>* predict_x, std::vector<int>* predict_y, std::vector<int>* predict_width, std::vector<int>* predict_height);
 	void estimateAlgoritmCoordinateLoadFromFile(std::vector<int>* predict_x, std::vector<int>* predict_y, std::vector<int>* predict_width, std::vector<int>* predict_height);
 	void writeAlgoritmWork();
+	void setGiuParametrs();
 public:
-    QtAlgoritmAnalis(QWidget *parent = Q_NULLPTR);
+	QtAlgoritmAnalis(QWidget* parent = Q_NULLPTR);
 private slots:
 	void slot_OK();
 	void slot_analis();
-	void slot_cleanVideoNameLE();
-	void slot_cleanFileNameLE();
+	/*void slot_cleanVideoNameLE();
+	void slot_cleanFileNameLE();*/
 	void slot_setParams();
 	void slot_workDete();
 	void slot_workBeginDete();
@@ -111,13 +113,13 @@ private slots:
 	void slot_loadDll();
 	void slot_createNewVideo();
 	void slot_dataFromVideoGenerate(QString videoName);
-	void slot_addRect();
+	void slot_addObject();
 	void slot_deletRect();
 	void slot_nextFrame();
 	void slot_setFileWithParamsForAlgoritm();
 	void slot_startStopWriteVideo();
 private:
-    Ui::QtAlgoritmAnalisClass ui;
+	Ui::QtAlgoritmAnalisClass ui;
 public slots:
-	void slot_dataFromForm(QString fileWithCoordinate, QString dirToSave, QString dllWithLoadParams,QString settingsForLoadParams, bool isLoadCoordinate, bool isLoadParams);
+	void slot_dataFromForm(QString fileWithCoordinate, QString dirToSave, QString dllWithLoadParams, QString settingsForLoadParams, bool isLoadCoordinate, bool isLoadParams);
 };

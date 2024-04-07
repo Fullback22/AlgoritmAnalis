@@ -164,6 +164,7 @@ void QtGuiDisplay::slot_ZoomImg_AllLabl()
 void QtGuiDisplay::setActivFrame(const Frame& activObj)
 {
 	frame_ = activObj;
+	cv::Mat sad{ frame_.getMat() };
  	ui.label_for_TempImg->setAlignment(Qt::AlignCenter);
 	if (frame_.frameIsNull())
 	{
@@ -241,6 +242,16 @@ void QtGuiDisplay::updateImage()
 {
 	drawAllFigure();
 	ui.label_for_TempImg->showPartImage();
+}
+
+int QtGuiDisplay::getActivFigureIndex() const
+{
+	return activFigure_;
+}
+
+const QPixmap& QtGuiDisplay::getCurentImage() const
+{
+	return ui.label_for_TempImg->getCurentImage();
 }
 
 void QtGuiDisplay::updateFrame(const Frame& activObj)

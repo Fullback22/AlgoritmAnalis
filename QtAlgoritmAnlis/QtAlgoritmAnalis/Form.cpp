@@ -64,6 +64,7 @@ void Form::slot_OK()
 	{
 		f_close = true;
 		emit getDataForm(ui.lineEdit_coordinateCeil->text(), ui.lineEdit_saveDirName->text(), ui.lineEdit_dllName->text(), ui.lineEdit_settigsForParams->text(), load, ui.RB_loadParams->isChecked());
+		close();
 	}
 		
 }
